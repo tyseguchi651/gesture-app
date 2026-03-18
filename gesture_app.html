@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Gesture Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #1e1e2a;
+    --text: #e8e8f0;
+    --text-dim: #6b6b80;
+    --accent: #4af0c0;
+    --accent-glow: rgba(74, 240, 192, 0.15);
+    --swipe-r: #ff6b6b;
+    --swipe-l: #6baaff;
+    --swipe-u: #ffd06b;
+    --swipe-d: #c06bff;
+    --tap: #4af0c0;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Grain overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header h1 .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    transition: all 0.3s;
+  }
+
+  .status-badge.active {
+    color: var(--accent);
+    border-color: rgba(74, 240, 192, 0.3);
+    background: var(--accent-glow);
+  }
+
+  /* ── Camera ── */
+  .camera-wrap {
+    position: relative;
+    flex: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: #000;
+    min-height: 0;
+  }
+
+  video, canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  video { transform: scaleX(-1); }
+  #overlay { transform: scaleX(-1); z-index: 2; pointer-events: none; }
+
+  /* ── Gesture flash overlay ── */
+  .gesture-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gesture-flash.show { opacity: 1; }
+
+  .gesture-flash .arrow {
+    font-size: 72px;
+    filter: drop-shadow(0 0 30px currentColor);
+    animation: arrowPop 0.5s ease-out;
+  }
+
+  @keyframes arrowPop {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+  }
+
+  /* ── Info panel ── */
+  .info-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .gesture-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .gesture-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(74, 240, 192, 0.2);
+    transition: all 0.3s;
+  }
+
+  .gesture-label {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    transition: all 0.3s;
+  }
+
+  .gesture-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Gesture legend ── */
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .legend-item {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .legend-item.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .legend-item .icon { font-size: 18px; margin-bottom: 2px; }
+  .legend-item .label {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Demo content area (swipeable) ── */
+  .demo-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    overflow: hidden;
+    position: relative;
+    min-height: 70px;
+  }
+
+  .demo-cards {
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    gap: 16px;
+  }
+
+  .demo-card {
+    min-width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .demo-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .demo-card p { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+  .page-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .page-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+
+  .page-dots .dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* ── Start screen ── */
+  .start-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    transition: opacity 0.5s, visibility 0.5s;
+  }
+
+  .start-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .start-screen h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+
+  .start-screen p {
+    color: var(--text-dim);
+    font-size: 14px;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+
+  .start-btn {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 50px;
+    background: var(--accent);
+    color: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+
+  .start-btn:active { transform: scale(0.95); }
+
+  .license-note {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<!-- Start Screen -->
+<div class="start-screen" id="startScreen">
+  <h2>✋ Gesture Control</h2>
+  <p>カメラに手をかざしてスワイプやタップのジェスチャーで操作できます</p>
+  <button class="start-btn" id="startBtn">カメラを起動</button>
+  <div class="license-note">
+    MediaPipe Hands — Apache 2.0 License<br>
+    © 2024 Google LLC. カメラ映像はデバイス上のみで処理されサーバーには送信されません
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="app-container">
+  <div class="header">
+    <h1><span class="dot" id="liveDot"></span> Gesture Control</h1>
+    <span class="status-badge" id="statusBadge">WAITING</span>
+  </div>
+
+  <div class="camera-wrap">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="overlay"></canvas>
+    <div class="gesture-flash" id="gestureFlash">
+      <span class="arrow" id="flashArrow"></span>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="gesture-display">
+      <div class="gesture-icon" id="gestureIcon">👋</div>
+      <div>
+        <div class="gesture-label" id="gestureLabel">待機中</div>
+        <div class="gesture-sub" id="gestureSub">手をカメラにかざしてください</div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="legend-item" id="leg-right"><div class="icon">→</div><div class="label">右</div></div>
+      <div class="legend-item" id="leg-left"><div class="icon">←</div><div class="label">左</div></div>
+      <div class="legend-item" id="leg-up"><div class="icon">↑</div><div class="label">上</div></div>
+      <div class="legend-item" id="leg-down"><div class="icon">↓</div><div class="label">下</div></div>
+      <div class="legend-item" id="leg-tap"><div class="icon">👆</div><div class="label">タップ</div></div>
+    </div>
+  </div>
+
+  <div class="demo-area">
+    <div class="demo-cards" id="demoCards">
+      <div class="demo-card" style="background:rgba(74,240,192,0.08)">
+        <h3>📷 ページ 1</h3>
+        <p>← 右スワイプで次へ →</p>
+      </div>
+      <div class="demo-card" style="background:rgba(107,170,255,0.08)">
+        <h3>🎯 ページ 2</h3>
+        <p>ジェスチャーで操作中</p>
+      </div>
+      <div class="demo-card" style="background:rgba(192,107,255,0.08)">
+        <h3>✨ ページ 3</h3>
+        <p>タップで選択できます</p>
+      </div>
+      <div class="demo-card" style="background:rgba(255,208,107,0.08)">
+        <h3>🚀 ページ 4</h3>
+        <p>非接触操作デモ完了!</p>
+      </div>
+    </div>
+    <div class="page-dots" id="pageDots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MediaPipe Hands (Apache 2.0)
+     https://github.com/google/mediapipe
+     ═══════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
+
+<script>
+// ── Configuration (tuned for C-portability — all thresholds are simple constants) ──
+const CFG = Object.freeze({
+  // Swipe detection
+  SWIPE_DIST_THRESHOLD:   0.12,   // normalized distance to trigger swipe
+  SWIPE_TIME_MAX_MS:      600,    // max ms for a swipe gesture
+  SWIPE_RATIO:            1.6,    // major axis / minor axis ratio to classify direction
+  SWIPE_COOLDOWN_MS:      700,    // cooldown between gestures
+
+  // Tap detection (pinch: thumb tip ↔ index tip)
+  PINCH_CLOSE_DIST:       0.06,   // normalized distance = pinch closed
+  PINCH_OPEN_DIST:        0.10,   // normalized distance = pinch open
+  TAP_TIME_MAX_MS:        500,    // max ms for close→open cycle
+
+  // Tracking
+  HISTORY_LEN:            30,     // frames of position history
+  LANDMARK_WRIST:         0,      // MediaPipe wrist index
+  LANDMARK_THUMB_TIP:     4,
+  LANDMARK_INDEX_TIP:     8,
+});
+
+// ── State ──
+let posHistory   = [];    // [{x, y, t}, ...]
+let pinchState   = 'open'; // 'open' | 'closed'
+let pinchCloseT  = 0;
+let lastGestureT = 0;
+let currentPage  = 0;
+const totalPages = 4;
+
+// ── DOM ──
+const video        = document.getElementById('video');
+const overlayCanvas= document.getElementById('overlay');
+const ctx          = overlayCanvas.getContext('2d');
+const startScreen  = document.getElementById('startScreen');
+const startBtn     = document.getElementById('startBtn');
+const statusBadge  = document.getElementById('statusBadge');
+const gestureIcon  = document.getElementById('gestureIcon');
+const gestureLabel = document.getElementById('gestureLabel');
+const gestureSub   = document.getElementById('gestureSub');
+const gestureFlash = document.getElementById('gestureFlash');
+const flashArrow   = document.getElementById('flashArrow');
+const demoCards    = document.getElementById('demoCards');
+const pageDots     = document.getElementById('pageDots');
+
+// ── Utility ──
+function dist2d(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function now() { return performance.now(); }
+
+// ── Gesture detection (designed for direct C translation) ──
+function detectSwipe(history, currentTime) {
+  /*  Scan backwards from latest point to find a swipe
+      that covers enough distance within the time window.
+      Returns: 'right' | 'left' | 'up' | 'down' | null         */
+  if (history.length < 4) return null;
+
+  const end = history[history.length - 1];
+
+  for (let i = history.length - 4; i >= 0; i--) {
+    const start = history[i];
+    const dt = end.t - start.t;
+    if (dt > CFG.SWIPE_TIME_MAX_MS) break;
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const adx = Math.abs(dx);
+    const ady = Math.abs(dy);
+    const d  = Math.sqrt(dx * dx + dy * dy);
+
+    if (d < CFG.SWIPE_DIST_THRESHOLD) continue;
+
+    if (adx > ady * CFG.SWIPE_RATIO) {
+      // Note: camera is mirrored, so visual left = positive dx
+      return dx > 0 ? 'left' : 'right';
+    }
+    if (ady > adx * CFG.SWIPE_RATIO) {
+      return dy > 0 ? 'down' : 'up';
+    }
+  }
+  return null;
+}
+
+function detectPinchTap(thumbTip, indexTip, currentTime) {
+  /*  Detect a pinch-release cycle = "tap"
+      Returns: true if tap detected                              */
+  const d = dist2d(thumbTip, indexTip);
+
+  if (pinchState === 'open' && d < CFG.PINCH_CLOSE_DIST) {
+    pinchState = 'closed';
+    pinchCloseT = currentTime;
+    return false;
+  }
+
+  if (pinchState === 'closed' && d > CFG.PINCH_OPEN_DIST) {
+    pinchState = 'open';
+    const elapsed = currentTime - pinchCloseT;
+    if (elapsed < CFG.TAP_TIME_MAX_MS) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ── Visual feedback ──
+const GESTURE_META = {
+  right: { icon: '→', label: '右スワイプ', color: 'var(--swipe-r)', legendId: 'leg-right' },
+  left:  { icon: '←', label: '左スワイプ', color: 'var(--swipe-l)', legendId: 'leg-left'  },
+  up:    { icon: '↑', label: '上スワイプ', color: 'var(--swipe-u)', legendId: 'leg-up'    },
+  down:  { icon: '↓', label: '下スワイプ', color: 'var(--swipe-d)', legendId: 'leg-down'  },
+  tap:   { icon: '👆', label: 'タップ',     color: 'var(--tap)',     legendId: 'leg-tap'   },
+};
+
+function showGesture(type) {
+  const m = GESTURE_META[type];
+  if (!m) return;
+
+  gestureIcon.textContent = m.icon;
+  gestureIcon.style.borderColor = m.color;
+  gestureLabel.textContent = m.label;
+  gestureLabel.style.color = m.color;
+  gestureSub.textContent = `検出: ${new Date().toLocaleTimeString('ja-JP')}`;
+
+  // Flash overlay
+  flashArrow.textContent = m.icon;
+  flashArrow.style.color = m.color;
+  gestureFlash.classList.add('show');
+  setTimeout(() => gestureFlash.classList.remove('show'), 500);
+
+  // Legend highlight
+  document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(m.legendId)?.classList.add('active');
+}
+
+function navigatePage(direction) {
+  if (direction === 'right' && currentPage < totalPages - 1) {
+    currentPage++;
+  } else if (direction === 'left' && currentPage > 0) {
+    currentPage--;
+  }
+  demoCards.style.transform = `translateX(-${currentPage * (100 + 4.7)}%)`;
+  const dots = pageDots.querySelectorAll('.dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentPage));
+}
+
+// ── Hand landmark drawing ──
+function drawHand(landmarks) {
+  ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+  if (!landmarks) return;
+
+  const w = overlayCanvas.width;
+  const h = overlayCanvas.height;
+
+  // Connections (MediaPipe hand topology)
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],       // thumb
+    [0,5],[5,6],[6,7],[7,8],       // index
+    [0,9],[9,10],[10,11],[11,12],   // middle (from wrist through 5→9)
+    [0,13],[13,14],[14,15],[15,16], // ring
+    [0,17],[17,18],[18,19],[19,20], // pinky
+    [5,9],[9,13],[13,17],          // palm
+  ];
+
+  ctx.strokeStyle = 'rgba(74, 240, 192, 0.5)';
+  ctx.lineWidth = 2;
+  for (const [a, b] of connections) {
+    ctx.beginPath();
+    ctx.moveTo(landmarks[a].x * w, landmarks[a].y * h);
+    ctx.lineTo(landmarks[b].x * w, landmarks[b].y * h);
+    ctx.stroke();
+  }
+
+  // Joints
+  for (let i = 0; i < landmarks.length; i++) {
+    const lm = landmarks[i];
+    const r = (i === 0 || i === 4 || i === 8) ? 6 : 3;
+    ctx.beginPath();
+    ctx.arc(lm.x * w, lm.y * h, r, 0, Math.PI * 2);
+    ctx.fillStyle = (i === 4 || i === 8)
+      ? 'rgba(74, 240, 192, 0.9)'
+      : 'rgba(255, 255, 255, 0.7)';
+    ctx.fill();
+  }
+
+  // Pinch line (thumb↔index)
+  const thumb = landmarks[CFG.LANDMARK_THUMB_TIP];
+  const index = landmarks[CFG.LANDMARK_INDEX_TIP];
+  const pd = dist2d(thumb, index);
+  const pinchColor = pd < CFG.PINCH_CLOSE_DIST
+    ? 'rgba(74, 240, 192, 1)'
+    : 'rgba(255, 255, 255, 0.2)';
+  ctx.strokeStyle = pinchColor;
+  ctx.lineWidth = pd < CFG.PINCH_CLOSE_DIST ? 3 : 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(thumb.x * w, thumb.y * h);
+  ctx.lineTo(index.x * w, index.y * h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ── MediaPipe setup ──
+function setupMediaPipe() {
+  const hands = new Hands({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+  });
+
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 0,       // 0 = lite (faster on mobile)
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.5,
+  });
+
+  hands.onResults(onResults);
+
+  const camera = new Camera(video, {
+    onFrame: async () => {
+      await hands.send({ image: video });
+    },
+    width: 640,
+    height: 480,
+    facingMode: 'user',
+  });
+
+  camera.start().then(() => {
+    statusBadge.textContent = 'ACTIVE';
+    statusBadge.classList.add('active');
+  });
+}
+
+function onResults(results) {
+  // Resize overlay to match video
+  if (overlayCanvas.width !== video.videoWidth) {
+    overlayCanvas.width = video.videoWidth || 640;
+    overlayCanvas.height = video.videoHeight || 480;
+  }
+
+  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    return;
+  }
+
+  const landmarks = results.multiHandLandmarks[0];
+  const t = now();
+
+  // Draw hand skeleton
+  drawHand(landmarks);
+
+  // Track wrist position
+  const wrist = landmarks[CFG.LANDMARK_WRIST];
+  posHistory.push({ x: wrist.x, y: wrist.y, t: t });
+  if (posHistory.length > CFG.HISTORY_LEN) {
+    posHistory.shift();
+  }
+
+  // Cooldown check
+  if (t - lastGestureT < CFG.SWIPE_COOLDOWN_MS) return;
+
+  // 1) Swipe detection
+  const swipe = detectSwipe(posHistory, t);
+  if (swipe) {
+    lastGestureT = t;
+    posHistory = [];
+    showGesture(swipe);
+
+    // Execute action: navigate demo cards
+    if (swipe === 'right') navigatePage('right');
+    if (swipe === 'left')  navigatePage('left');
+
+    // Dispatch custom event for integration
+    window.dispatchEvent(new CustomEvent('gesture', { detail: { type: swipe } }));
+    return;
+  }
+
+  // 2) Tap detection
+  const thumbTip = landmarks[CFG.LANDMARK_THUMB_TIP];
+  const indexTip = landmarks[CFG.LANDMARK_INDEX_TIP];
+  const tapped = detectPinchTap(thumbTip, indexTip, t);
+  if (tapped) {
+    lastGestureT = t;
+    showGesture('tap');
+    window.dispatchEvent(new CustomEvent('gesture', { detail: { type: 'tap' } }));
+  }
+}
+
+// ── Init ──
+startBtn.addEventListener('click', () => {
+  startScreen.classList.add('hidden');
+  setupMediaPipe();
+});
+
+// Expose gesture listener for external integration
+// Usage: window.addEventListener('gesture', e => console.log(e.detail.type));
+</script>
+</body>
+</html>
