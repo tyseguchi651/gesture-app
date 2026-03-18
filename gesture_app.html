@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -7,331 +8,333 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+- { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --border: #1e1e2a;
-    --text: #e8e8f0;
-    --text-dim: #6b6b80;
-    --accent: #4af0c0;
-    --accent-glow: rgba(74, 240, 192, 0.15);
-    --swipe-r: #ff6b6b;
-    --swipe-l: #6baaff;
-    --swipe-u: #ffd06b;
-    --swipe-d: #c06bff;
-    --tap: #4af0c0;
-  }
+:root {
+–bg: #0a0a0f;
+–surface: #13131a;
+–border: #1e1e2a;
+–text: #e8e8f0;
+–text-dim: #6b6b80;
+–accent: #4af0c0;
+–accent-glow: rgba(74, 240, 192, 0.15);
+–swipe-r: #ff6b6b;
+–swipe-l: #6baaff;
+–swipe-u: #ffd06b;
+–swipe-d: #c06bff;
+–tap: #4af0c0;
+}
 
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100dvh;
-    overflow: hidden;
-    position: relative;
-  }
+body {
+font-family: ‘Outfit’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100dvh;
+overflow: hidden;
+position: relative;
+}
 
-  /* ── Grain overlay ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-  }
+/* ── Grain overlay ── */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’ opacity=‘0.04’/%3E%3C/svg%3E”);
+pointer-events: none;
+z-index: 9999;
+}
 
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    padding: 12px;
-    gap: 10px;
-  }
+.app-container {
+display: flex;
+flex-direction: column;
+height: 100dvh;
+padding: 12px;
+gap: 10px;
+}
 
-  /* ── Header ── */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 4px;
-  }
+/* ── Header ── */
+.header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 8px 4px;
+}
 
-  .header h1 {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.header h1 {
+font-size: 18px;
+font-weight: 700;
+letter-spacing: -0.5px;
+display: flex;
+align-items: center;
+gap: 8px;
+}
 
-  .header h1 .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
+.header h1 .dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(–accent);
+box-shadow: 0 0 12px var(–accent);
+animation: pulse 2s ease-in-out infinite;
+}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.4; }
+}
 
-  .status-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    transition: all 0.3s;
-  }
+.status-badge {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 11px;
+padding: 4px 10px;
+border-radius: 20px;
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–text-dim);
+transition: all 0.3s;
+}
 
-  .status-badge.active {
-    color: var(--accent);
-    border-color: rgba(74, 240, 192, 0.3);
-    background: var(--accent-glow);
-  }
+.status-badge.active {
+color: var(–accent);
+border-color: rgba(74, 240, 192, 0.3);
+background: var(–accent-glow);
+}
 
-  /* ── Camera ── */
-  .camera-wrap {
-    position: relative;
-    flex: 1;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: #000;
-    min-height: 0;
-  }
+/* ── Camera ── */
+.camera-wrap {
+position: relative;
+flex: 1;
+border-radius: 16px;
+overflow: hidden;
+border: 1px solid var(–border);
+background: #000;
+min-height: 0;
+}
 
-  video, canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+video, canvas {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
 
-  video { transform: scaleX(-1); }
-  #overlay { transform: scaleX(-1); z-index: 2; pointer-events: none; }
+video { transform: scaleX(-1); }
+#overlay { transform: scaleX(-1); z-index: 2; pointer-events: none; }
 
-  /* ── Gesture flash overlay ── */
-  .gesture-flash {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* ── Gesture flash overlay ── */
+.gesture-flash {
+position: absolute;
+inset: 0;
+z-index: 3;
+pointer-events: none;
+opacity: 0;
+transition: opacity 0.15s;
+display: flex;
+align-items: center;
+justify-content: center;
+}
 
-  .gesture-flash.show { opacity: 1; }
+.gesture-flash.show { opacity: 1; }
 
-  .gesture-flash .arrow {
-    font-size: 72px;
-    filter: drop-shadow(0 0 30px currentColor);
-    animation: arrowPop 0.5s ease-out;
-  }
+.gesture-flash .arrow {
+font-size: 72px;
+filter: drop-shadow(0 0 30px currentColor);
+animation: arrowPop 0.5s ease-out;
+}
 
-  @keyframes arrowPop {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-  }
+@keyframes arrowPop {
+0% { transform: scale(0.3); opacity: 0; }
+50% { transform: scale(1.2); opacity: 1; }
+100% { transform: scale(1); opacity: 0.8; }
+}
 
-  /* ── Info panel ── */
-  .info-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-  }
+/* ── Info panel ── */
+.info-panel {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 14px;
+padding: 14px;
+}
 
-  .gesture-display {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
+.gesture-display {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 12px;
+}
 
-  .gesture-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    background: var(--accent-glow);
-    border: 1px solid rgba(74, 240, 192, 0.2);
-    transition: all 0.3s;
-  }
+.gesture-icon {
+width: 48px;
+height: 48px;
+border-radius: 12px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 24px;
+background: var(–accent-glow);
+border: 1px solid rgba(74, 240, 192, 0.2);
+transition: all 0.3s;
+}
 
-  .gesture-label {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    transition: all 0.3s;
-  }
+.gesture-label {
+font-size: 22px;
+font-weight: 700;
+letter-spacing: -0.5px;
+transition: all 0.3s;
+}
 
-  .gesture-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-  }
+.gesture-sub {
+font-size: 12px;
+color: var(–text-dim);
+font-family: ‘JetBrains Mono’, monospace;
+}
 
-  /* ── Gesture legend ── */
-  .legend {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-  }
+/* ── Gesture legend ── */
+.legend {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 6px;
+}
 
-  .legend-item {
-    text-align: center;
-    padding: 8px 4px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid transparent;
-    transition: all 0.3s;
-  }
+.legend-item {
+text-align: center;
+padding: 8px 4px;
+border-radius: 10px;
+background: rgba(255,255,255,0.02);
+border: 1px solid transparent;
+transition: all 0.3s;
+}
 
-  .legend-item.active {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-  }
+.legend-item.active {
+border-color: var(–accent);
+background: var(–accent-glow);
+}
 
-  .legend-item .icon { font-size: 18px; margin-bottom: 2px; }
-  .legend-item .label {
-    font-size: 9px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
+.legend-item .icon { font-size: 18px; margin-bottom: 2px; }
+.legend-item .label {
+font-size: 9px;
+font-family: ‘JetBrains Mono’, monospace;
+color: var(–text-dim);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
 
-  /* ── Demo content area (swipeable) ── */
-  .demo-area {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    overflow: hidden;
-    position: relative;
-    min-height: 70px;
-  }
+/* ── Demo content area (swipeable) ── */
+.demo-area {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 14px;
+padding: 16px;
+overflow: hidden;
+position: relative;
+min-height: 70px;
+}
 
-  .demo-cards {
-    display: flex;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    gap: 16px;
-  }
+.demo-cards {
+display: flex;
+transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+gap: 16px;
+}
 
-  .demo-card {
-    min-width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-  }
+.demo-card {
+min-width: 100%;
+padding: 12px;
+border-radius: 10px;
+text-align: center;
+}
 
-  .demo-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  .demo-card p { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+.demo-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.demo-card p { font-size: 11px; color: var(–text-dim); font-family: ‘JetBrains Mono’, monospace; }
 
-  .page-dots {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 10px;
-  }
+.page-dots {
+display: flex;
+justify-content: center;
+gap: 6px;
+margin-top: 10px;
+}
 
-  .page-dots .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--border);
-    transition: all 0.3s;
-  }
+.page-dots .dot {
+width: 6px;
+height: 6px;
+border-radius: 50%;
+background: var(–border);
+transition: all 0.3s;
+}
 
-  .page-dots .dot.active {
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    width: 18px;
-    border-radius: 3px;
-  }
+.page-dots .dot.active {
+background: var(–accent);
+box-shadow: 0 0 8px var(–accent);
+width: 18px;
+border-radius: 3px;
+}
 
-  /* ── Start screen ── */
-  .start-screen {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    transition: opacity 0.5s, visibility 0.5s;
-  }
+/* ── Start screen ── */
+.start-screen {
+position: absolute;
+inset: 0;
+z-index: 10;
+background: var(–bg);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 20px;
+transition: opacity 0.5s, visibility 0.5s;
+}
 
-  .start-screen.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
+.start-screen.hidden {
+opacity: 0;
+visibility: hidden;
+pointer-events: none;
+}
 
-  .start-screen h2 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -1px;
-  }
+.start-screen h2 {
+font-size: 28px;
+font-weight: 700;
+letter-spacing: -1px;
+}
 
-  .start-screen p {
-    color: var(--text-dim);
-    font-size: 14px;
-    text-align: center;
-    max-width: 280px;
-    line-height: 1.5;
-  }
+.start-screen p {
+color: var(–text-dim);
+font-size: 14px;
+text-align: center;
+max-width: 280px;
+line-height: 1.5;
+}
 
-  .start-btn {
-    font-family: 'Outfit', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 14px 40px;
-    border: none;
-    border-radius: 50px;
-    background: var(--accent);
-    color: var(--bg);
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 0 30px var(--accent-glow);
-  }
+.start-btn {
+font-family: ‘Outfit’, sans-serif;
+font-size: 16px;
+font-weight: 600;
+padding: 14px 40px;
+border: none;
+border-radius: 50px;
+background: var(–accent);
+color: var(–bg);
+cursor: pointer;
+transition: all 0.2s;
+box-shadow: 0 0 30px var(–accent-glow);
+}
 
-  .start-btn:active { transform: scale(0.95); }
+.start-btn:active { transform: scale(0.95); }
 
-  .license-note {
-    font-size: 10px;
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-    text-align: center;
-    max-width: 300px;
-    line-height: 1.4;
-  }
+.license-note {
+font-size: 10px;
+color: var(–text-dim);
+font-family: ‘JetBrains Mono’, monospace;
+text-align: center;
+max-width: 300px;
+line-height: 1.4;
+}
 </style>
+
 </head>
 <body>
 
 <!-- Start Screen -->
+
 <div class="start-screen" id="startScreen">
   <h2>✋ Gesture Control</h2>
   <p>カメラに手をかざしてスワイプやタップのジェスチャーで操作できます</p>
@@ -343,6 +346,7 @@
 </div>
 
 <!-- Main App -->
+
 <div class="app-container">
   <div class="header">
     <h1><span class="dot" id="liveDot"></span> Gesture Control</h1>
@@ -406,22 +410,34 @@
      MediaPipe Hands (Apache 2.0)
      https://github.com/google/mediapipe
      ═══════════════════════════════════════════════════ -->
+
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"></script>
 
 <script>
-// ── Configuration (tuned for C-portability — all thresholds are simple constants) ──
+// ── Configuration (tuned for close-range use ~30cm) ──
 const CFG = Object.freeze({
   // Swipe detection
-  SWIPE_DIST_THRESHOLD:   0.12,   // normalized distance to trigger swipe
-  SWIPE_TIME_MAX_MS:      600,    // max ms for a swipe gesture
-  SWIPE_RATIO:            1.6,    // major axis / minor axis ratio to classify direction
-  SWIPE_COOLDOWN_MS:      700,    // cooldown between gestures
+  SWIPE_DIST_THRESHOLD:   0.22,   // ↑ 大きく動かさないと反応しない (旧: 0.12)
+  SWIPE_TIME_MAX_MS:      500,    // ↓ 素早い動きのみ受付 (旧: 600)
+  SWIPE_RATIO:            2.0,    // ↑ 斜め移動を拒否しやすく (旧: 1.6)
+  SWIPE_COOLDOWN_MS:      1200,   // ↑ 連続誤検出を防止 (旧: 700)
+
+  // Settle: スワイプ前に手が静止していることを要求
+  SETTLE_FRAMES:          5,      // 直近Nフレームの移動量をチェック
+  SETTLE_MAX_DIST:        0.04,   // この範囲内なら「静止」とみなす
+
+  // Reverse block: スワイプ後、逆方向を一定時間ブロック
+  REVERSE_BLOCK_MS:       1500,   // 戻り動作の誤検出を防止
 
   // Tap detection (pinch: thumb tip ↔ index tip)
-  PINCH_CLOSE_DIST:       0.06,   // normalized distance = pinch closed
-  PINCH_OPEN_DIST:        0.10,   // normalized distance = pinch open
+  PINCH_CLOSE_DIST:       0.07,   // ↑ 近距離用に少し広げた (旧: 0.06)
+  PINCH_OPEN_DIST:        0.12,   // ↑ 同上 (旧: 0.10)
   TAP_TIME_MAX_MS:        500,    // max ms for close→open cycle
+
+  // Pinch suppresses swipe: ピンチ中はスワイプ無効
+  PINCH_SWIPE_SUPPRESS:   0.09,   // この距離以下ならスワイプ検出を抑制
 
   // Tracking
   HISTORY_LEN:            30,     // frames of position history
@@ -431,12 +447,18 @@ const CFG = Object.freeze({
 });
 
 // ── State ──
-let posHistory   = [];    // [{x, y, t}, ...]
-let pinchState   = 'open'; // 'open' | 'closed'
-let pinchCloseT  = 0;
-let lastGestureT = 0;
-let currentPage  = 0;
-const totalPages = 4;
+let posHistory    = [];    // [{x, y, t}, ...]
+let pinchState    = 'open'; // 'open' | 'closed'
+let pinchCloseT   = 0;
+let lastGestureT  = 0;
+let lastSwipeDir  = null;  // 最後のスワイプ方向 (逆方向ブロック用)
+let lastSwipeT    = 0;     // 最後のスワイプ時刻
+let currentPinchD = 1.0;   // 現在のピンチ距離
+let currentPage   = 0;
+const totalPages  = 4;
+
+// 逆方向マップ
+const OPPOSITE = { right: 'left', left: 'right', up: 'down', down: 'up' };
 
 // ── DOM ──
 const video        = document.getElementById('video');
@@ -462,43 +484,87 @@ function dist2d(a, b) {
 
 function now() { return performance.now(); }
 
-// ── Gesture detection (designed for direct C translation) ──
+// ── [NEW] Settle check: スワイプ開始前に手が静止しているか判定 ──
+function isSettled(history) {
+  const n = history.length;
+  if (n < CFG.SETTLE_FRAMES) return false;
+  const start = history[n - CFG.SETTLE_FRAMES];
+  const end   = history[n - 1];
+  // 直前の数フレームでほとんど動いていなければ「静止」
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  return Math.sqrt(dx * dx + dy * dy) < CFG.SETTLE_MAX_DIST;
+}
+
+// ── Gesture detection (improved v2) ──
 function detectSwipe(history, currentTime) {
-  /*  Scan backwards from latest point to find a swipe
-      that covers enough distance within the time window.
-      Returns: 'right' | 'left' | 'up' | 'down' | null         */
-  if (history.length < 4) return null;
+  if (history.length < 6) return null;
+
+  // [NEW] ピンチ中はスワイプ検出しない
+  if (currentPinchD < CFG.PINCH_SWIPE_SUPPRESS) return null;
 
   const end = history[history.length - 1];
 
-  for (let i = history.length - 4; i >= 0; i--) {
-    const start = history[i];
-    const dt = end.t - start.t;
+  // [NEW] スワイプ開始点を探す: 静止→移動の遷移を検出
+  // 後ろからスキャンして、静止区間の末尾を探す
+  let sweepStart = -1;
+  for (let i = history.length - 6; i >= 0; i--) {
+    const pt = history[i];
+    const dt = end.t - pt.t;
     if (dt > CFG.SWIPE_TIME_MAX_MS) break;
 
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const adx = Math.abs(dx);
-    const ady = Math.abs(dy);
-    const d  = Math.sqrt(dx * dx + dy * dy);
-
-    if (d < CFG.SWIPE_DIST_THRESHOLD) continue;
-
-    if (adx > ady * CFG.SWIPE_RATIO) {
-      // Note: camera is mirrored, so visual left = positive dx
-      return dx > 0 ? 'left' : 'right';
-    }
-    if (ady > adx * CFG.SWIPE_RATIO) {
-      return dy > 0 ? 'down' : 'up';
+    // この地点から数フレーム後の移動量が小さければ静止開始点
+    if (i + CFG.SETTLE_FRAMES <= history.length) {
+      const settleEnd = history[i + CFG.SETTLE_FRAMES - 1];
+      const sdx = settleEnd.x - pt.x;
+      const sdy = settleEnd.y - pt.y;
+      if (Math.sqrt(sdx * sdx + sdy * sdy) < CFG.SETTLE_MAX_DIST) {
+        sweepStart = i + CFG.SETTLE_FRAMES - 1;
+        break;
+      }
     }
   }
-  return null;
+
+  // 静止開始点が見つからなければフォールバック
+  if (sweepStart < 0) {
+    // 最低限: 履歴前半が静止していればOK
+    if (!isSettled(history.slice(0, Math.min(history.length, CFG.SETTLE_FRAMES + 2)))) {
+      return null;
+    }
+    sweepStart = 0;
+  }
+
+  const start = history[sweepStart];
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const adx = Math.abs(dx);
+  const ady = Math.abs(dy);
+  const d  = Math.sqrt(dx * dx + dy * dy);
+
+  if (d < CFG.SWIPE_DIST_THRESHOLD) return null;
+
+  let direction = null;
+  if (adx > ady * CFG.SWIPE_RATIO) {
+    direction = dx > 0 ? 'left' : 'right';
+  } else if (ady > adx * CFG.SWIPE_RATIO) {
+    direction = dy > 0 ? 'down' : 'up';
+  }
+
+  if (!direction) return null;
+
+  // [NEW] 逆方向ブロック: 直前のスワイプと逆方向ならブロック
+  if (lastSwipeDir && direction === OPPOSITE[lastSwipeDir]) {
+    if (currentTime - lastSwipeT < CFG.REVERSE_BLOCK_MS) {
+      return null;  // 戻り動作 → 無視
+    }
+  }
+
+  return direction;
 }
 
 function detectPinchTap(thumbTip, indexTip, currentTime) {
-  /*  Detect a pinch-release cycle = "tap"
-      Returns: true if tap detected                              */
   const d = dist2d(thumbTip, indexTip);
+  currentPinchD = d;  // [NEW] スワイプ抑制用に保存
 
   if (pinchState === 'open' && d < CFG.PINCH_CLOSE_DIST) {
     pinchState = 'closed';
@@ -669,12 +735,32 @@ function onResults(results) {
   }
 
   // Cooldown check
-  if (t - lastGestureT < CFG.SWIPE_COOLDOWN_MS) return;
+  if (t - lastGestureT < CFG.SWIPE_COOLDOWN_MS) {
+    // [NEW] クールダウン中でもピンチ距離は更新する (スワイプ抑制に必要)
+    const thumbTip_ = landmarks[CFG.LANDMARK_THUMB_TIP];
+    const indexTip_ = landmarks[CFG.LANDMARK_INDEX_TIP];
+    currentPinchD = dist2d(thumbTip_, indexTip_);
+    return;
+  }
 
-  // 1) Swipe detection
+  // 1) Tap detection FIRST (タップを優先判定)
+  const thumbTip = landmarks[CFG.LANDMARK_THUMB_TIP];
+  const indexTip = landmarks[CFG.LANDMARK_INDEX_TIP];
+  const tapped = detectPinchTap(thumbTip, indexTip, t);
+  if (tapped) {
+    lastGestureT = t;
+    posHistory = [];   // タップ後の履歴をクリアしてスワイプ誤検出防止
+    showGesture('tap');
+    window.dispatchEvent(new CustomEvent('gesture', { detail: { type: 'tap' } }));
+    return;
+  }
+
+  // 2) Swipe detection (ピンチ中は自動で抑制される)
   const swipe = detectSwipe(posHistory, t);
   if (swipe) {
     lastGestureT = t;
+    lastSwipeDir = swipe;   // 逆方向ブロック用に記録
+    lastSwipeT   = t;
     posHistory = [];
     showGesture(swipe);
 
@@ -685,16 +771,6 @@ function onResults(results) {
     // Dispatch custom event for integration
     window.dispatchEvent(new CustomEvent('gesture', { detail: { type: swipe } }));
     return;
-  }
-
-  // 2) Tap detection
-  const thumbTip = landmarks[CFG.LANDMARK_THUMB_TIP];
-  const indexTip = landmarks[CFG.LANDMARK_INDEX_TIP];
-  const tapped = detectPinchTap(thumbTip, indexTip, t);
-  if (tapped) {
-    lastGestureT = t;
-    showGesture('tap');
-    window.dispatchEvent(new CustomEvent('gesture', { detail: { type: 'tap' } }));
   }
 }
 
@@ -707,5 +783,6 @@ startBtn.addEventListener('click', () => {
 // Expose gesture listener for external integration
 // Usage: window.addEventListener('gesture', e => console.log(e.detail.type));
 </script>
+
 </body>
 </html>
